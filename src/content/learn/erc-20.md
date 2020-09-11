@@ -1,8 +1,6 @@
-# ERC-20 Token Standard (!!!DAFT!!!)
+# ERC-20 Token Standard (!!!DRAFT!!!)
 
 ## Introduction
-
-"A short intro that introduces the topic and explains what the user should learn by reading on"
 
 What is a Token?
 
@@ -19,15 +17,11 @@ is and will always be equal to all the other Tokens.
 
 ## Prerequisites
 
-"What should someone know before reading this page?"
-
 - Accounts
 - Smart Contracts
 - Tokens
 
 ## Body
-
-"The body is the main content on the page, it should explore the topic in detail and show plenty of examples (where appropriate)."
 
 The ERC-20 (Ethereum Request for Comments 20), proposed by Fabian Vogelsteller in November 2015, is a Token Standard that 
 implements an API for tokens within Smart Contracts.
@@ -99,7 +93,7 @@ event Transfer(address indexed _from, address indexed _to, uint256 _value)
 event Approval(address indexed _owner, address indexed _spender, uint256 _value)
 ```
 
-- TODO: What's an example?
+- TODO: What's an example or examples?
 - TODO: How can I use one in a dapp or smart contract?
 - TODO: What's an example?
 
@@ -107,8 +101,6 @@ event Approval(address indexed _owner, address indexed _spender, uint256 _value)
 
 
 ## Further reading
-
-"Is there some detail that you don't think is vital but some users may find interesting? Provide links here!"
 
 - https://eips.ethereum.org/EIPS/eip-20
 - https://docs.openzeppelin.com/contracts/3.x/tokens#ERC20
