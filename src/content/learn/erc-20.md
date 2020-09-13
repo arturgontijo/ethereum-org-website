@@ -93,9 +93,139 @@ event Transfer(address indexed _from, address indexed _to, uint256 _value)
 event Approval(address indexed _owner, address indexed _spender, uint256 _value)
 ```
 
+### Examples
+
+Let's see how a Standard is so important to make things simple for us to inspect any ERC-20 Token Contract on Ethereum. 
+We just need the Contract Application Binary Interface (ABI) to instantiate an interface to any ERC-20 Token. As you can 
+see below we will use a simplified ABI, to make it a low friction example.
+
+#### Web3.py Example
+
+First, make sure you have installed [Web3.py](https://web3py.readthedocs.io/en/stable/quickstart.html#installation) Python library:
+
+```
+$ pip install web3
+```
+
+```python
+from web3 import Web3
+
+
+w3 = Web3(Web3.HTTPProvider("https://cloudflare-eth.com"))
+
+dai_token_addr="0x6B175474E89094C44Da98b954EedeAC495271d0F"     # DAI
+weth_token_addr="0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2"    # Wrapped Ether (WETH)
+
+acc_address="0xA478c2975Ab1Ea89e8196811F51A7B7Ade33eB11"        # Uniswap V2: DAI 2
+
+# This is a simplified Contract Application Binary Interface (ABI) of an ERC-20 Token Contract.
+# It will expose only the methods: balanceOf(address), decimals() and totalSupply()
+simplified_abi = [
+    {
+        'inputs': [{'internalType': 'address', 'name': 'account', 'type': 'address'}], 
+        'name': 'balanceOf', 
+        'outputs': [{'internalType': 'uint256', 'name': '', 'type': 'uint256'}], 
+        'stateMutability': 'view', 'type': 'function', 'constant': True
+    }, 
+    {
+        'inputs': [], 
+        'name': 'decimals', 
+        'outputs': [{'internalType': 'uint8', 'name': '', 'type': 'uint8'}], 
+        'stateMutability': 'view', 'type': 'function', 'constant': True
+    }, 
+    {
+        'inputs': [], 
+        'name': 'totalSupply', 
+        'outputs': [{'internalType': 'uint256', 'name': '', 'type': 'uint256'}], 
+        'stateMutability': 'view', 'type': 'function', 'constant': True
+    }
+]
+
+dai_contract = w3.eth.contract(address=w3.toChecksumAddress(dai_token_addr), abi=simplified_abi)
+decimals = dai_contract.functions.decimals().call()
+totalSupply = dai_contract.functions.totalSupply().call() / 10**decimals
+addr_balance = dai_contract.functions.balanceOf(acc_address).call() / 10**decimals
+
+#  ===== DAI =====
+print("Total Supply:", totalSupply)
+print("Addr Balance:", addr_balance)
+
+weth_contract = w3.eth.contract(address=w3.toChecksumAddress(weth_token_addr), abi=simplified_abi)
+decimals = weth_contract.functions.decimals().call()
+totalSupply = weth_contract.functions.totalSupply().call() / 10**decimals
+addr_balance = weth_contract.functions.balanceOf(acc_address).call() / 10**decimals
+
+#  ===== WETH =====
+print("Total Supply:", totalSupply)
+print("Addr Balance:", addr_balance)
+```
+
+#### Web3.js Example
+
+Let's now do the same thing we did before but using Javascript.
+First make sure you have [Metamask](https://metamask.io/download.html) plugin installed in your Browser.
+
+```
+dai_token_addr="0x6B175474E89094C44Da98b954EedeAC495271d0F"     // DAI
+weth_token_addr="0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2"    // Wrapped Ether (WETH)
+
+acc_address="0xA478c2975Ab1Ea89e8196811F51A7B7Ade33eB11"        // Uniswap V2: DAI 2
+
+// This is a simplified Contract Application Binary Interface (ABI) of an ERC-20 Token Contract.
+// It will expose only the methods: balanceOf(address), decimals() and totalSupply()
+simplified_abi = [
+    {
+        'inputs': [{'internalType': 'address', 'name': 'account', 'type': 'address'}], 
+        'name': 'balanceOf', 
+        'outputs': [{'internalType': 'uint256', 'name': '', 'type': 'uint256'}], 
+        'stateMutability': 'view', 'type': 'function', 'constant': true
+    }, 
+    {
+        'inputs': [], 
+        'name': 'decimals', 
+        'outputs': [{'internalType': 'uint8', 'name': '', 'type': 'uint8'}], 
+        'stateMutability': 'view', 'type': 'function', 'constant': true
+    }, 
+    {
+        'inputs': [], 
+        'name': 'totalSupply', 
+        'outputs': [{'internalType': 'uint256', 'name': '', 'type': 'uint256'}], 
+        'stateMutability': 'view', 'type': 'function', 'constant': true
+    }
+]
+
+function totalSupply(_contract) {
+  _contract.totalSupply((err, total) => {
+    _contract.decimals((err, decimals) => {
+      total = total.div(10**decimals);
+      console.log(total.toString());
+    });
+  });
+}
+
+function balanceOf(_contract, _address) {
+  _contract.balanceOf(_address, (err, balance) => {
+    _contract.decimals((err, decimals) => {
+      balance = balance.div(10**decimals);
+      console.log(balance.toString());
+    });
+  });
+}
+
+// DAI
+let dai_contract = web3.eth.contract(simplified_abi).at(dai_token_addr);
+totalSupply(dai_contract)
+balanceOf(dai_contract, acc_address)
+
+// WETH
+let weth_contract = web3.eth.contract(simplified_abi).at(weth_token_addr);
+totalSupply(weth_contract)
+balanceOf(weth_contract, acc_address)
+```
+
+
 - TODO: What's an example or examples?
 - TODO: How can I use one in a dapp or smart contract?
-- TODO: What's an example?
 
 - TODO: (A-HA Moment) Stuff you can do with ERC-20 in DeFi, like interest earning...
 
