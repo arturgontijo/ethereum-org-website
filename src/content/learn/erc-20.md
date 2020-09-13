@@ -223,10 +223,37 @@ totalSupply(weth_contract)
 balanceOf(weth_contract, acc_address)
 ```
 
+#### Creating a Token
 
-- TODO: What's an example or examples?
+Let's create an ERC-20 Token using [Remix](https://remix.ethereum.org/) and the [OpenZeppelin's ERC-20](
+https://github.com/OpenZeppelin/openzeppelin-contracts/blob/master/contracts/token/ERC20/ERC20.sol) implementation.
+
+First, create a new file with this code (yeah, only that! The ERC20.sol will hold all the heavy code):
+
+```
+pragma solidity ^0.6.10;
+
+import "http://github.com/OpenZeppelin/openzeppelin-solidity/contracts/token/ERC20/ERC20.sol";
+
+contract UniAuctionToken is ERC20 {
+    constructor() ERC20("MyToken", "HIX") public {
+        _mint(msg.sender, 100);
+    }
+}
+```
+
+Its recommended to use a Testnet to deploy and test any contract before move forward to the Mainnet. Just make sure that 
+you have some ETH to pay the gas of the deployment transaction.
+
+The contract above will create a new ERC-20 Token, called "MyToken", with a total supply of 100 HIX (its symbol).
+The `_mint` function will set the balance of the `msg.sender` to the total supply. So anyone how deploys this contract 
+will receive all the tokens in their account.
+
+As soon as the contact is deployed, you will be able to use the Remix interface to interact with it, to keep track of 
+the accounts balances, just like we did in the previous examples.
+
+
 - TODO: How can I use one in a dapp or smart contract?
-
 - TODO: (A-HA Moment) Stuff you can do with ERC-20 in DeFi, like interest earning...
 
 
