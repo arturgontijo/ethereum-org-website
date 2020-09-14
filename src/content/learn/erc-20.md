@@ -164,7 +164,9 @@ print("Addr Balance:", addr_balance)
 
 Let's now do the same thing we did before but using the Javascript's library 
 [Web3.js](https://web3js.readthedocs.io/en/v1.2.11/getting-started.html#getting-started).
-First make sure you have [Metamask](https://metamask.io/download.html) plugin installed in your Browser.
+
+First make sure you have [Metamask](https://metamask.io/download.html) plugin installed in your Browser. 
+Metamask injects an Ethereum Provider at `window.ethereum`.
 
 ```
 dai_token_addr="0x6B175474E89094C44Da98b954EedeAC495271d0F"     // DAI
@@ -213,15 +215,19 @@ function balanceOf(_contract, _address) {
   });
 }
 
-// DAI
-let dai_contract = web3.eth.contract(simplified_abi).at(dai_token_addr);
-totalSupply(dai_contract)
-balanceOf(dai_contract, acc_address)
+if(window.ethereum) {
+  const web3 = new Web3(window.ethereum);
 
-// WETH
-let weth_contract = web3.eth.contract(simplified_abi).at(weth_token_addr);
-totalSupply(weth_contract)
-balanceOf(weth_contract, acc_address)
+  // DAI
+  let dai_contract = web3.eth.contract(simplified_abi).at(dai_token_addr);
+  totalSupply(dai_contract)
+  balanceOf(dai_contract, acc_address)
+
+  // WETH
+  let weth_contract = web3.eth.contract(simplified_abi).at(weth_token_addr);
+  totalSupply(weth_contract)
+  balanceOf(weth_contract, acc_address)
+}
 ```
 
 #### Creating a Token
