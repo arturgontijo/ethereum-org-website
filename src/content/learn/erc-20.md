@@ -197,36 +197,30 @@ simplified_abi = [
     }
 ]
 
-function totalSupply(_contract) {
-  _contract.totalSupply((err, total) => {
-    _contract.decimals((err, decimals) => {
-      total = total.div(10**decimals);
-      console.log(total.toString());
-    });
-  });
-}
-
-function balanceOf(_contract, _address) {
-  _contract.balanceOf(_address, (err, balance) => {
-    _contract.decimals((err, decimals) => {
-      balance = balance.div(10**decimals);
-      console.log(balance.toString());
-    });
-  });
-}
-
-if(window.ethereum) {
-  const web3 = new Web3(window.ethereum);
-
-  // DAI
-  let dai_contract = web3.eth.contract(simplified_abi).at(dai_token_addr);
-  totalSupply(dai_contract)
-  balanceOf(dai_contract, acc_address)
-
-  // WETH
-  let weth_contract = web3.eth.contract(simplified_abi).at(weth_token_addr);
-  totalSupply(weth_contract)
-  balanceOf(weth_contract, acc_address)
+async function inspectTokens() {
+    var _web3;
+    if(window.web3) { _web3 = window.web3; }
+    else if (window.ethereum) { _web3 = new Web3(window.ethereum); };
+    
+    if(_web3) {
+        // DAI
+        let dai_contract = new _web3.eth.Contract(simplified_abi, dai_token_addr, {});
+        let decimals = await dai_contract.methods.decimals().call()
+        let total_supply = await dai_contract.methods.totalSupply().call()
+        let balance = await dai_contract.methods.balanceOf(acc_address).call()
+        console.log("===== DAI =====");
+        console.log("Total Supply: " + total_supply / 10**decimals);
+        console.log("Addr Balance:" + balance / 10**decimals);
+        
+        // WETH
+        let weth_contract = new _web3.eth.Contract(simplified_abi, weth_token_addr, {});
+        decimals = await weth_contract.methods.decimals().call()
+        total_supply = await weth_contract.methods.totalSupply().call()
+        balance = await weth_contract.methods.balanceOf(acc_address).call()
+        console.log("===== WETH =====");
+        console.log("Total Supply: " + total_supply / 10**decimals);
+        console.log("Addr Balance:" + balance / 10**decimals);
+    }
 }
 ```
 
@@ -258,6 +252,7 @@ will receive all the tokens in their account.
 
 As soon as the contact is deployed, you will be able to use the Remix interface to interact with it, to keep track of 
 the accounts balances, just like we did in the previous examples.
+
 
 
 - TODO: How can I use one in a dapp or smart contract?
