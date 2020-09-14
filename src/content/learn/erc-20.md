@@ -222,6 +222,8 @@ async function inspectTokens() {
         console.log("Addr Balance:" + balance / 10**decimals);
     }
 }
+
+await inspectTokens()
 ```
 
 #### Creating a Token
