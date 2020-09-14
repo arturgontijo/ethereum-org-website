@@ -162,7 +162,8 @@ print("Addr Balance:", addr_balance)
 
 #### Web3.js Example
 
-Let's now do the same thing we did before but using Javascript.
+Let's now do the same thing we did before but using the Javascript's library 
+[Web3.js](https://web3js.readthedocs.io/en/v1.2.11/getting-started.html#getting-started).
 First make sure you have [Metamask](https://metamask.io/download.html) plugin installed in your Browser.
 
 ```
@@ -242,11 +243,11 @@ contract UniAuctionToken is ERC20 {
 }
 ```
 
-Its recommended to use a Testnet to deploy and test any contract before move forward to the Mainnet. Just make sure that 
+It's recommended to use a Testnet to deploy and test any contract before moving forward to the Mainnet. Just make sure that 
 you have some ETH to pay the gas of the deployment transaction.
 
 The contract above will create a new ERC-20 Token, called "MyToken", with a total supply of 100 HIX (its symbol).
-The `_mint` function will set the balance of the `msg.sender` to the total supply. So anyone how deploys this contract 
+The `_mint` function will set the balance of the `msg.sender` to the total supply. So anyone who deploys this contract 
 will receive all the tokens in their account.
 
 As soon as the contact is deployed, you will be able to use the Remix interface to interact with it, to keep track of 
