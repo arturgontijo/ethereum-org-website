@@ -184,24 +184,24 @@ INFURA_API_KEY = "<<32_LENGTH_KEY>>"
 w3 = Web3(Web3.HTTPProvider("https://kovan.infura.io/v3/%s" % INFURA_API_KEY))
 
 # Creating the first account, if you don't have one
-account_1 = w3.eth.account.create()
-print("Addr: %s" % account_1.address)
-print(" PK : %s" % account_1.privateKey.hex()) # You can Import this in your Metamask
+acc_1 = w3.eth.account.create()
+print("Addr: %s" % acc_1.address)
+print(" PK : %s" % acc_1.privateKey.hex()) # You can Import this in your Metamask
 
 # Creating the second account, if you don't have one
-account_2= w3.eth.account.create()
-print("Addr: %s" % account_2.address)
-print(" PK : %s" % account_2.privateKey.hex()) # You can Import this in your Metamask
+acc_2= w3.eth.account.create()
+print("Addr: %s" % acc_2.address)
+print(" PK : %s" % acc_2.privateKey.hex()) # You can Import this in your Metamask
 
-print("Acc1 Kovan ETH: %f" % w3.fromWei(w3.eth.getBalance(account_1.address), "ether"))
-print("Acc2 Kovan ETH: %f" % w3.fromWei(w3.eth.getBalance(account_2.address), "ether"))
+print("Acc1 Kovan ETH: %f" % w3.fromWei(w3.eth.getBalance(acc_1.address), "ether"))
+print("Acc2 Kovan ETH: %f" % w3.fromWei(w3.eth.getBalance(acc_2.address), "ether"))
 ```
 
 ##### 2.  Get a Kovan ETH [here](https://faucet.kovan.network/) for the first account.
 
 ```python
 # Checking again your first account balance
-print("Acc1 Kovan ETH: %f" % w3.fromWei(w3.eth.getBalance(account_1.address), "ether"))
+print("Acc1 Kovan ETH: %f" % w3.fromWei(w3.eth.getBalance(acc_1.address), "ether"))
 ```
 
 ##### 3.  Set your Metamask to the Kovan Network (and import your first account there).
@@ -225,24 +225,24 @@ dai_contract = w3.eth.contract(address=w3.toChecksumAddress(dai_token_addr), abi
 
 symbol = dai_contract.functions.symbol().call()
 decimals = dai_contract.functions.decimals().call()
-addr_balance = dai_contract.functions.balanceOf(account_1.address).call() / 10**decimals
+addr_balance = dai_contract.functions.balanceOf(acc_1.address).call() / 10**decimals
 
 print("Acc1 Kovan %s: %f" % (symbol, addr_balance))
-print("Acc1 Kovan ETH: %f" % w3.fromWei(w3.eth.getBalance(account_1.address), "ether"))
+print("Acc1 Kovan ETH: %f" % w3.fromWei(w3.eth.getBalance(acc_1.address), "ether"))
 
 # Transferring 1 DAI from the first to the second account, but first we have to approve it:
-transfer_method = dai_contract.functions.transfer(account_2.address, 1*10**decimals)
+transfer_method = dai_contract.functions.transfer(acc_2.address, 1*10**decimals)
 
 txn = transfer_method.buildTransaction(
     {
-        "from": account_1.address,
-        "nonce": w3.eth.getTransactionCount(account_1.address),
+        "from": acc_1.address,
+        "nonce": w3.eth.getTransactionCount(acc_1.address),
         "gas": 500000,
         "chainId": int(w3.version.network)
     }
 )
 
-raw_transaction = w3.eth.account.signTransaction(txn, account_1.privateKey).rawTransaction
+raw_transaction = w3.eth.account.signTransaction(txn, acc_1.privateKey).rawTransaction
 txn_hash = w3.eth.sendRawTransaction(raw_transaction)
 w3.eth.waitForTransactionReceipt(txn_hash)  # This can last few seconds or even minutes...
 
@@ -251,11 +251,51 @@ receipt = w3.eth.getTransactionReceipt(txn_hash)
 print(receipt)
 
 # Finally, let's check the second account DAI balance
-acc2_balance = dai_contract.functions.balanceOf(account_2.address).call() / 10**decimals
+acc2_balance = dai_contract.functions.balanceOf(acc_2.address).call() / 10**decimals
 print("Acc1 Kovan %s: %f" % (symbol, acc2_balance))
 
 # You can now exercise what you've learned by sending the 1 DAI back to the first account.
 # Remember that you will need some Kovan ETH in your second account to pay the gas of the transaction.
+```
+
+### TODO: What about using an Interface to make things easier?
+
+```python
+class SimpleContractInterface:
+    def __init__(self, w3, user_pk, contract_addr, contract_abi):
+        self.w3 = w3
+        self.user_pk = self.w3.eth.account.privateKeyToAccount(user_pk).privateKey
+        self.user_addr = self.w3.eth.account.privateKeyToAccount(user_pk).address
+        self.address = self.w3.toChecksumAddress(contract_addr)
+        self.last_txn = ""
+        self.gas = 500000
+        self.contract = self.w3.eth.contract(address=self.w3.toChecksumAddress(contract_addr), abi=contract_abi)
+        self.functions = self.contract.functions
+        self.abi = contract_abi
+    def _build_txn(self, method, *args):
+        return getattr(self.functions, method)(*args).buildTransaction({
+            "from": self.user_addr,
+            "nonce": self.w3.eth.getTransactionCount(self.user_addr),
+            "gas": self.gas,
+            "chainId": int(self.w3.version.network)})
+    def _sign_send_wait(self, txn):
+        raw_txn = self.w3.eth.account.signTransaction(txn, self.user_pk).rawTransaction
+        self.last_txn = self.w3.eth.sendRawTransaction(raw_txn)
+        print("Transaction sent, please wait...")
+        self.w3.eth.waitForTransactionReceipt(self.last_txn)
+        print("Done!")
+        return self.w3.eth.getTransactionReceipt(self.last_txn)
+    def transact(self, method, *args):
+        txn = self._build_txn(method, *args)
+        return self._sign_send_wait(txn)
+    def call(self, method, *args):
+        return getattr(self.functions, method)(*args).call()
+
+
+contract = SimpleContractInterface(w3, acc_1.privateKey, dai_token_addr, final_abi)
+
+r = contract.transact("transfer", acc_2.address, 1 * (10**contract.call("decimals")))
+contract.call("balanceOf", acc_2.address)
 ```
 
 #### Web3.js Example
