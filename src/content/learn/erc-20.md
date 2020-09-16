@@ -170,6 +170,94 @@ print("Total Supply:", totalSupply)
 print("Addr Balance:", addr_balance)
 ```
 
+### TODO: Is the following too heavy to be here? Maybe! =/
+
+No let's dive into a more interesting usage of an ERC-20 Token Contract, it's time to send and receive them!
+
+To do that we will use the Kovan Ethereum Testnet and the Infure API as a provider.
+
+##### 1.  Get an Infura API Key (Project ID) [here](https://infura.io/register).
+
+```python
+INFURA_API_KEY = "<<32_LENGTH_KEY>>"
+
+w3 = Web3(Web3.HTTPProvider("https://kovan.infura.io/v3/%s" % INFURA_API_KEY))
+
+# Creating the first account, if you don't have one
+account_1 = w3.eth.account.create()
+print("Addr: %s" % account_1.address)
+print(" PK : %s" % account_1.privateKey.hex()) # You can Import this in your Metamask
+
+# Creating the second account, if you don't have one
+account_2= w3.eth.account.create()
+print("Addr: %s" % account_2.address)
+print(" PK : %s" % account_2.privateKey.hex()) # You can Import this in your Metamask
+
+print("Acc1 Kovan ETH: %f" % w3.fromWei(w3.eth.getBalance(account_1.address), "ether"))
+print("Acc2 Kovan ETH: %f" % w3.fromWei(w3.eth.getBalance(account_2.address), "ether"))
+```
+
+##### 2.  Get a Kovan ETH [here](https://faucet.kovan.network/) for the first account.
+
+```python
+# Checking again your first account balance
+print("Acc1 Kovan ETH: %f" % w3.fromWei(w3.eth.getBalance(account_1.address), "ether"))
+```
+
+##### 3.  Set your Metamask to the Kovan Network (and import your first account there).
+##### 4.  Use Uniswap to swap part of your ETH (eg. 0.1) to some DAI tokens [here](https://app.uniswap.org/#/swap).
+
+```python
+more_methods_abi = [
+    {
+        'inputs': [{'internalType': 'address', 'name': 'recipient', 'type': 'address'}, 
+                   {'internalType': 'uint256', 'name': 'amount', 'type': 'uint256'}], 
+        'name': 'transfer',
+        'outputs': [{'internalType': 'bool', 'name': '', 'type': 'bool'}], 
+        'stateMutability': 'nonpayable', 'type': 'function'
+    }
+]
+
+final_abi = simplified_abi + more_methods_abi
+
+dai_token_addr="0x4f96fe3b7a6cf9725f59d353f723c1bdb64ca6aa"  # DAI (Kovan)
+dai_contract = w3.eth.contract(address=w3.toChecksumAddress(dai_token_addr), abi=final_abi)
+
+symbol = dai_contract.functions.symbol().call()
+decimals = dai_contract.functions.decimals().call()
+addr_balance = dai_contract.functions.balanceOf(account_1.address).call() / 10**decimals
+
+print("Acc1 Kovan %s: %f" % (symbol, addr_balance))
+print("Acc1 Kovan ETH: %f" % w3.fromWei(w3.eth.getBalance(account_1.address), "ether"))
+
+# Transferring 1 DAI from the first to the second account, but first we have to approve it:
+transfer_method = dai_contract.functions.transfer(account_2.address, 1*10**decimals)
+
+txn = transfer_method.buildTransaction(
+    {
+        "from": account_1.address,
+        "nonce": w3.eth.getTransactionCount(account_1.address),
+        "gas": 500000,
+        "chainId": int(w3.version.network)
+    }
+)
+
+raw_transaction = w3.eth.account.signTransaction(txn, account_1.privateKey).rawTransaction
+txn_hash = w3.eth.sendRawTransaction(raw_transaction)
+w3.eth.waitForTransactionReceipt(txn_hash)  # This can last few seconds or even minutes...
+
+# You can inspect the transaction receipt
+receipt = w3.eth.getTransactionReceipt(txn_hash)
+print(receipt)
+
+# Finally, let's check the second account DAI balance
+acc2_balance = dai_contract.functions.balanceOf(account_2.address).call() / 10**decimals
+print("Acc1 Kovan %s: %f" % (symbol, acc2_balance))
+
+# You can now exercise what you've learned by sending the 1 DAI back to the first account.
+# Remember that you will need some Kovan ETH in your second account to pay the gas of the transaction.
+```
+
 #### Web3.js Example
 
 Let's now do the same thing we did before but using the Javascript's library 
