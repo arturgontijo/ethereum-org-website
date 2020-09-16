@@ -218,7 +218,7 @@ transfer_abi = [
     }
 ]
 
-final_abi = simplified_abi + more_methods_abi
+final_abi = simplified_abi + transfer_abi
 
 dai_token_addr="0x4f96fe3b7a6cf9725f59d353f723c1bdb64ca6aa"  # DAI (Kovan)
 dai_contract = w3.eth.contract(address=w3.toChecksumAddress(dai_token_addr), abi=final_abi)
