@@ -1,9 +1,7 @@
 class SimpleContractInterface:
     def __init__(self, w3, user_pk, contract_addr, contract_abi):
         self.w3 = w3
-        self.user_pk = self.w3.eth.account.privateKeyToAccount(user_pk).privateKey
-        self.user_addr = self.w3.eth.account.privateKeyToAccount(user_pk).address
-        self.address = self.w3.toChecksumAddress(contract_addr)
+        self.account = self.w3.eth.account.privateKeyToAccount(user_pk)
         self.last_txn = ""
         self.gas = 500000
         self.contract = self.w3.eth.contract(address=self.w3.toChecksumAddress(contract_addr), abi=contract_abi)
@@ -11,12 +9,12 @@ class SimpleContractInterface:
         self.abi = contract_abi
     def _build_txn(self, method, *args):
         return getattr(self.functions, method)(*args).buildTransaction({
-            "from": self.user_addr,
-            "nonce": self.w3.eth.getTransactionCount(self.user_addr),
+            "from": self.account.address,
+            "nonce": self.w3.eth.getTransactionCount(self.account.address),
             "gas": self.gas,
             "chainId": int(self.w3.version.network)})
     def _sign_send_wait(self, txn):
-        raw_txn = self.w3.eth.account.signTransaction(txn, self.user_pk).rawTransaction
+        raw_txn = self.w3.eth.account.signTransaction(txn, self.account.privateKey).rawTransaction
         self.last_txn = self.w3.eth.sendRawTransaction(raw_txn)
         print("Transaction sent, please wait...")
         self.w3.eth.waitForTransactionReceipt(self.last_txn)
