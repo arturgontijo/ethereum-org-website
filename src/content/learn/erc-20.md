@@ -208,7 +208,7 @@ print("Acc1 Kovan ETH: %f" % w3.fromWei(w3.eth.getBalance(account_1.address), "e
 ##### 4.  Use Uniswap to swap part of your ETH (eg. 0.1) to some DAI tokens [here](https://app.uniswap.org/#/swap).
 
 ```python
-more_methods_abi = [
+transfer_abi = [
     {
         'inputs': [{'internalType': 'address', 'name': 'recipient', 'type': 'address'}, 
                    {'internalType': 'uint256', 'name': 'amount', 'type': 'uint256'}], 
